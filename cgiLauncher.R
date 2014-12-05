@@ -38,25 +38,9 @@ showWait <- function(id) {
 	} else {
 		output <- "Waiting for daemon..."
 	}
-	cat("Content-type: text/html
-
-	<html>
-	<head>
-	<title>PopCode Oligo Designer</title>
-  <link rel=\"stylesheet\" href=\"../../popcodeSuite/style.css\" type=\"text/css\"/>
-	<meta http-equiv=\"refresh\" content=\"2; url=http://dalai.mshri.on.ca/~jweile/cgi/popcodeSuite/cgiLauncher.R?id=",id,"\" />
-	</head>
-	<body>
-	<h1>PopCode Oligo Designer</h1>
-	<h2>Please wait</h2>
-  <div class=\"box\"><div class=\"passepartoutcode\">
-	<pre><code>",
-	paste(output,collapse="<br/>"),
-	"</code></pre>
-  </div></div>
-	</body>
-	</html>
-	",sep="")
+	cat(interpolate("../../html/popcodeSuite/wait.html",
+		c(id=id, output=paste(output,collapse="\n"))
+	))
 }
 
 showResult <- function(id) {
