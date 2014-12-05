@@ -82,7 +82,7 @@ if ("id" %in% names(getData)) {
 	if (file.exists(paste("../../html/popcodeSuite/",id,"_mutcov.pdf",sep=""))) {
 		#then the job is done
 		showResult(id)
-	} else if (file.exists(paste("../../html/popcodeSuite/",id,"_in.fa",sep=""))) {
+	} else if (!file.exists(paste("../../html/popcodeSuite/",id,"_in.fa",sep=""))) {
 		#invalid id
 		showError("This job does not exist (anymore?)")
 	} else {
