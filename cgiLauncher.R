@@ -53,6 +53,10 @@ showResult <- function(id) {
 	))
 }
 
+showInput <- function() {
+	cat(interpolate("../../html/popcodeSuite/cgiInput.html",character(0)))
+}
+
 #read GET data
 getTable <- do.call(rbind,strsplit(strsplit(Sys.getenv("QUERY_STRING"),"&")[[1]],"="))
 getData <- lapply(getTable[,2],URLdecode)
@@ -85,34 +89,39 @@ if ("id" %in% names(getData)) {
 	}
 } else {
 	#no ID was provided -> it's a new job
-	id <- paste(format(Sys.time(),"%Y-%m-%d"),makeUUID(),sep="_")
-	#get the input data
-	seq.data <- postData[["seq"]]
-	if (!is.null(seq.data) && length(seq.data) == 1 && nchar(seq.data) > 0) {
-		#check validity
-		fasta.match <- gregexpr(
-			"(>\\w+\\s*\\n([ACGTNRYSWKMacgtnryswkm]+\\s*\\n?)+)+",
-			seq.data,perl=TRUE
-		)
-		if (length(fasta.match) == 1 && 
-			fasta.match[[1]] == 1 && 
-			attr(fasta.match[[1]],"match.length")==nchar(seq.data)) {
+	if ("seq" %in% names(postData)) {
+		id <- paste(format(Sys.time(),"%Y-%m-%d"),makeUUID(),sep="_")
+		#get the input data
+		seq.data <- postData[["seq"]]
+		if (!is.null(seq.data) && length(seq.data) == 1 && nchar(seq.data) > 0) {
+			#check validity
+			fasta.match <- gregexpr(
+				"(>\\w+\\s*\\n([ACGTNRYSWKMacgtnryswkm]+\\s*\\n?)+)+",
+				seq.data,perl=TRUE
+			)
+			if (length(fasta.match) == 1 && 
+				fasta.match[[1]] == 1 && 
+				attr(fasta.match[[1]],"match.length")==nchar(seq.data)) {
 
-			#write input file
-			f <- file(paste("../../html/popcodeSuite/",id,"_in.fa",sep=""),open="w")
-			writeLines(seq.data,f)
-			close(f)
-			#Daemon will pick up the input file and start processing.
+				#write input file
+				f <- file(paste("../../html/popcodeSuite/",id,"_in.fa",sep=""),open="w")
+				writeLines(seq.data,f)
+				close(f)
+				#Daemon will pick up the input file and start processing.
 
-			#show wait message and refresh
-			showWait(id)
+				#show wait message and refresh
+				showWait(id)
+
+			} else {
+				showError("Input is not a valid FASTA document!")
+			}
 
 		} else {
-			showError("Input is not a valid FASTA document!")
+			showError("No input provided!")
 		}
 
 	} else {
-		showError("No input provided!")
+		showInput()
 	}
 
 }
