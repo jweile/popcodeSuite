@@ -1,0 +1,64 @@
+Content-type: text/html
+
+<html>
+	<head>
+		<title>PopCode Oligo Designer</title>
+  		<link rel="stylesheet" href="../../popcodeSuite/style.css" type="text/css"/>
+	</head>
+	<body>
+		<h1>PopCode Oligo Designer</h1>
+
+	    <div class="tabs">
+
+			<div class="tab">
+				<input type="radio" id="Oligos" name="tab-group-1" checked/>
+				<label for="Oligos">Oligos</label>
+				<div class="content">
+			        <h2>Oligo sequences:</h2>
+			        <div class="box"><div class="passepartouttext">
+				        <pre><code>%oligos</code></pre>
+			        </div></div>
+	      		</div>
+			</div>
+
+	    	<div class="tab">
+				<input type="radio" id="Melting" name="tab-group-1"/>
+				<label for="Melting">Temperatures</label>
+				<div class="content">
+	        		<h2>Melting temperatures &amp; offsets:</h2>
+	        		<iframe src="../../popcodeSuite/%id.pdf" width="600px" height="300px"></iframe>
+	      		</div>
+			</div>
+
+	    	<div class="tab">
+				<input type="radio" id="Rate" name="tab-group-1"/>
+				<label for="Rate">Rates</label>
+				<div class="content">
+	        		<h2>Predicted mutation rates:</h2>
+	        		<iframe src="../../popcodeSuite/%id_mutrate.pdf" width="1100px" height="300px"></iframe>
+	      		</div>
+			</div>
+
+	    	<div class="tab">
+				<input type="radio" id="clones" name="tab-group-1"/>
+				<label for="clones">Clones</label>
+				<div class="content">
+	        		<h2>Predicted library size scaling:</h2>
+	        		<iframe src="../../popcodeSuite/%id_clones.pdf" width="400px" height="400px"></iframe>
+	      		</div>
+			</div>
+
+	    	<div class="tab">
+				<input type="radio" id="cov" name="tab-group-1"/>
+				<label for="cov">Coverage</label>
+				<div class="content">
+	        		<h2>Predicted coverage at 10000 clones:</h2>
+	        		<iframe src="../../popcodeSuite/%id_mutcov.pdf" width="1100px" height="300px"></iframe>
+	      		</div>
+			</div>
+
+  		</div>
+
+	</body>
+</html>
+
