@@ -5,36 +5,28 @@ sink(file("msg.log", open="w"),type="message")
 makeUUID <- function() {
 	baseuuid <- paste(sample(c(letters[1:6],0:9),30,replace=TRUE),collapse="")
 	paste(
-	    substr(baseuuid,1,8),
-	    "-",
-	    substr(baseuuid,9,12),
-	    "-",
-	    "4",
-	    substr(baseuuid,13,15),
-	    "-",
+	    substr(baseuuid,1,8),"-",
+	    substr(baseuuid,9,12),"-","4",
+	    substr(baseuuid,13,15),"-",
 	    sample(c("8","9","a","b"),1),
-	    substr(baseuuid,16,18),
-	    "-",
+	    substr(baseuuid,16,18),"-",
 	    substr(baseuuid,19,30),
-	    sep="",
-	    collapse=""
+	    sep="", collapse=""
 	)
 }
 
-showError <- function(err) {
-	cat("Content-type: text/html
+interpolate <- function(filename, values) {
+	con <- file(filename,open="r")
+	string <- paste(readLines(con),collapse="\n")
+	close(con)
+	for (name in names(values)) {
+		string <- gsub(paste("%",name,sep=""),values[[name]],string)
+	}
+	string
+}
 
-	<html>
-	<head>
-	<title>PopCode Oligo Designer</title>
-  <link rel=\"stylesheet\" href=\"../../popcodeSuite/style.css\" type=\"text/css\"/>
-	</head>
-	<body>
-	<h1>PopCode Oligo Designer</h1>
-	<p>Error:",err,"</p>
-	</body>
-	</html>
-	")
+showError <- function(err) {
+	cat(interpolate("../../html/popcodeSuite/error.html",c(err=err)))
 }
 
 showWait <- function(id) {
