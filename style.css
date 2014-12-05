@@ -90,6 +90,6 @@ input {
 	height: 400px;
   padding: 5px;
 	overflow: scroll;
-  background: lightslategray;
+  background: darkslategray;
   color: white;
 }
