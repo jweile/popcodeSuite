@@ -57,6 +57,20 @@ showInput <- function() {
 	cat(interpolate("../../html/popcodeSuite/cgiInput.html",character(0)))
 }
 
+
+seq.rx <- "([ACGTNRYSWKMacgtnryswkm]+\\n?)+"
+valid <- function(x) {
+	if (!is.null(x) && length(x) == 1 && nchar(x) > 0) {
+		seq.match <- gregexpr(seq.rx, x, perl=TRUE)
+		if (length(seq.match) == 1 && 
+				seq.match[[1]] == 1 && 
+				attr(seq.match[[1]],"match.length")==nchar(x)) {
+			return(TRUE)
+		}
+	}
+	return(FALSE)
+}
+
 #read GET data
 getTable <- do.call(rbind,strsplit(strsplit(Sys.getenv("QUERY_STRING"),"&")[[1]],"="))
 getData <- lapply(getTable[,2],URLdecode)
@@ -92,35 +106,38 @@ if ("id" %in% names(getData)) {
 	}
 } else {
 	#no ID was provided -> it's a new job
-	if ("seq" %in% names(postData)) {
-		id <- paste(format(Sys.time(),"%Y-%m-%d"),makeUUID(),sep="_")
+	if (any(c("orf","prefix","suffix") %in% names(postData))) {
 		#get the input data
-		seq.data <- postData[["seq"]]
-		if (!is.null(seq.data) && length(seq.data) == 1 && nchar(seq.data) > 0) {
-			#check validity
-			fasta.match <- gregexpr(
-				"(>\\w+\\s*\\n([ACGTNRYSWKMacgtnryswkm]+\\s*\\n?)+)+",
-				seq.data,perl=TRUE
+		orf <- postData[["orf"]]
+		prefix <- postData[["prefix"]]
+		suffix <- postData[["suffix"]]
+		#check validity	
+		if (valid(orf) && valid(prefix) && valid(suffix)) {
+
+			#create ID for this job
+			id <- paste(format(Sys.time(),"%Y-%m-%d"),makeUUID(),sep="_")
+			#write input file
+			f <- file(paste("../../html/popcodeSuite/",id,"_in.fa",sep=""),open="w")
+			writeLines(
+				c(
+					">prefix",
+					prefix,
+					">ORF",
+					orf,
+					">suffix",
+					suffix
+				),
+				f
 			)
-			if (length(fasta.match) == 1 && 
-				fasta.match[[1]] == 1 && 
-				attr(fasta.match[[1]],"match.length")==nchar(seq.data)) {
+			close(f)
+			#Daemon will pick up the input file and start processing.
 
-				#write input file
-				f <- file(paste("../../html/popcodeSuite/",id,"_in.fa",sep=""),open="w")
-				writeLines(seq.data,f)
-				close(f)
-				#Daemon will pick up the input file and start processing.
+			#show wait message and refresh
+			showWait(id)
 
-				#show wait message and refresh
-				showWait(id)
-
-			} else {
-				showError("Input is not a valid FASTA document!")
-			}
 
 		} else {
-			showError("No input provided!")
+			showError("Invalid input!")
 		}
 
 	} else {
