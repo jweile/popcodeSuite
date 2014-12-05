@@ -18,18 +18,29 @@ purge <- function(id) {
 	files <- list.files("www/html/popcodeSuite/",pattern=id,full.names=TRUE)
 	success <- sapply(files,file.remove)
 	if (all(success)) {
-		processed[which(processed$id == id),"id"] <<- NULL
+		processed <<- processed[-which(processed$id == id),,drop=FALSE]
 	}
 	exportProcessedTable()
 }
 
 #a function to start processing a given id
 process <- function(id,path) {
+	#check if an options file exists
+	opts.file <- paste("www/html/popcodeSuite/",id,"_opts.csv",sep="")
+	if (file.exists(opts.file)) {
+		#read the options file
+		opts <- read.csv(opts.file,stringsAsFactors=FALSE)
+		oligo.length <- if ("oligo.length" %in% colnames(opts)) opts$oligo.length else 33
+		wiggle <- if ("wiggle" %in% colnames(opts)) opts$wiggle else 5
+	}
+	#start the process
 	system(
 		paste(
 			"projects/popcodeSuite/popcodeSuite.R ",
 			"seq=",path," ",
 			"outfile=www/html/popcodeSuite/",id," ",
+			"length=",oligo.length," ",
+			"wiggle=",wiggle," ",
 			"&>www/html/popcodeSuite/",id,".out",
 			sep=""
 		),

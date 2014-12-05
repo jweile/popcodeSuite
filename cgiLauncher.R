@@ -111,11 +111,33 @@ if ("id" %in% names(getData)) {
 		orf <- postData[["orf"]]
 		prefix <- postData[["prefix"]]
 		suffix <- postData[["suffix"]]
+		oligo.length <- postData[["oligo.length"]]
+		wiggle <- postData[["wiggle"]]
+
 		#check validity	
 		if (valid(orf) && valid(prefix) && valid(suffix)) {
 
 			#create ID for this job
 			id <- paste(format(Sys.time(),"%Y-%m-%d"),makeUUID(),sep="_")
+
+			#process options and store
+			opts <- data.frame()
+			if (!is.null(oligo.length) && length(oligo.length)==1 && 
+				nchar(oligo.length)>0 && !is.na(as.numeric(oligo.length))) {
+				oligo.length <- as.numeric(oligo.length)
+				opts[1,"oligo.length"] <- oligo.length
+			}
+			if (!is.null(wiggle) && length(wiggle)==1 && 
+				nchar(wiggle)>0 && !is.na(as.numeric(wiggle))) {
+				wiggle <- as.numeric(wiggle)
+				opts[1,"wiggle"] <- wiggle
+			}
+			write.table(
+				opts,
+				paste("../../html/popcodeSuite/",id,"_opts.csv",sep=""),
+				sep=",",quote=FALSE,row.names=FALSE
+			)
+
 			#write input file
 			f <- file(paste("../../html/popcodeSuite/",id,"_in.fa",sep=""),open="w")
 			writeLines(

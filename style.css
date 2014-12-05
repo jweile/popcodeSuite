@@ -10,9 +10,24 @@ textarea {
   padding:5px;
 }
 
-input {
+/*input {
   font-size: 200%;
+}*/
+
+details {
+	border: 1px dotted #aaaaaa;
+	padding: 10px;
+	margin-bottom:5px;
+	width:600px;
 }
+summary {
+	/*font-weight: bold;*/
+	cursor:pointer;
+	/*color: darkblue;*/
+}
+summary:hover{
+	text-decoration: underline;
+};
 
 .tabs {
 	position: relative;
@@ -66,7 +81,6 @@ input {
 [type=radio]:checked ~ label ~ .content {
 	z-index: 1;
 }
-
 
 .box {
 	width: 600px;

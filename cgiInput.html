@@ -13,9 +13,17 @@ Content-type: text/html
     	<p>ORF sequence:</p>
 		<textarea name="orf" cols=80 rows=10/></textarea>
     	<p>Upstream vector sequence:</p>
-		<textarea name="prefix" cols=80 rows=1/></textarea>
+		<textarea name="prefix" cols=80 rows=1/>GCCAACTTTGTACAAAAAAGTTGGC</textarea>
     	<p>Downstream vector sequence:</p>
-		<textarea name="suffix" cols=80 rows=1/></textarea>
+		<textarea name="suffix" cols=80 rows=1/>TACCCAACTTTCTTGTACAAAGTTGGC</textarea>
+		<br/><br/>
+		<details>
+			<summary>Advanced options</summary>
+			<p>Oligo length:</p>
+			<input type="number" name="oligo.length" min=9 max=200 step=1 value=33 size=3/>
+			<p>Maximal offset:</p>
+			<input type="number" name="wiggle" min=1 max=10 step=1 value=5 size=3/>
+		</details>
 		<br/><br/>
 		<input type="submit" value="Submit">
 	</form>
