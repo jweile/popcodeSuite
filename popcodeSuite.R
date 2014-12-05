@@ -71,7 +71,7 @@ prefix <- as.character(getSeqByName(input.seqs,"prefix"))
 suffix <- as.character(getSeqByName(input.seqs,"suffix"))
 construct <- paste(prefix,orf,suffix,sep="")
 
-cat("Construct:",construct,"\n\n")
+# cat("Construct:",construct,"\n\n")
 
 cat("Exploring possible oligos...\n")
 codon.starts <- nchar(prefix) + seq(1+3,nchar(orf),3)
@@ -99,7 +99,7 @@ best.oligos <- do.call(rbind,lapply(oligo.choices, function(options) {
 }))
 
 cat("Plotting offset distribution...\n")
-pdf(paste(outfile,".pdf",sep=""),width=6,height=3)
+png(paste(outfile,".png",sep=""),width=600,height=300)
 op <- par(mfrow=c(1,2),cex=.9)
 
 barplot(
@@ -137,7 +137,7 @@ oligos <- do.call(c, lapply(1:nrow(best.oligos), function(i) {
 		substr(outseq, codon.start.in.oligo, codon.start.in.oligo+2) <- "NNK"
 		outseqs <- c(sequence,outseq)
 		names(outseqs) <- paste(aa,i,c("wt","X"),sep="")
-		cat(i,"\t",substr(sequence,1,1),"\t",substr(sequence,nchar(sequence),nchar(sequence)),"\n")
+		# cat(i,"\t",substr(sequence,1,1),"\t",substr(sequence,nchar(sequence),nchar(sequence)),"\n")
 		outseqs
 	})
 }))
@@ -153,7 +153,7 @@ mut.prob <- mut.prob / sum(mut.prob)
 
 
 cat("Plotting predicted mutation rates...\n")
-pdf(paste(outfile,"_mutrate.pdf",sep=""),width=12,height=3)
+png(paste(outfile,"_mutrate.png",sep=""),width=1200,height=300)
 xs <- barplot(
 	mut.prob,
 	xlab="Position",ylab="P(mut)",
@@ -248,7 +248,7 @@ coverages <- sapply(ns,function(n) {
 })
 
 cat("Plotting predicted coverage...\n")
-pdf(paste(outfile,"_clones.pdf",sep=""),width=4,height=4)
+png(paste(outfile,"_clones.png",sep=""),width=400,height=400)
 plot(
 	ns,coverages,type="l",
 	ylim=c(0,1),
@@ -390,6 +390,6 @@ plotMutCoverage <- function(mutations, sequence, all=FALSE, main="") {
 
 
 cat("Plotting detailed coverage...\n")
-pdf(paste(outfile,"_mutcov.pdf",sep=""),width=14,height=4)
+png(paste(outfile,"_mutcov.png",sep=""),width=1400,height=400)
 plotMutCoverage(clones,DNAString(orf))
 cat("Done!\n")

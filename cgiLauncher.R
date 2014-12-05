@@ -79,7 +79,7 @@ if ("id" %in% names(getData)) {
 	#if an id was quoted, it's not a new job
 	id <- gsub(" ","",getData[["id"]])
 	#check if output file exists
-	if (file.exists(paste("../../html/popcodeSuite/",id,"_mutcov.pdf",sep=""))) {
+	if (file.exists(paste("../../html/popcodeSuite/",id,"_mutcov.png",sep=""))) {
 		#then the job is done
 		showResult(id)
 	} else if (!file.exists(paste("../../html/popcodeSuite/",id,"_in.fa",sep=""))) {

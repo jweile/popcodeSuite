@@ -85,6 +85,13 @@ input {
 	overflow: scroll;
 }
 
+.passepartoutimg {
+	width: 600px;
+	height: 400px;
+	text-align: center;
+	overflow: scroll;
+}
+
 .passepartoutcode {
 	width: 600px;
 	height: 400px;
