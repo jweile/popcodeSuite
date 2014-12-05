@@ -149,6 +149,7 @@ cat("Writing output...\n\n")
 writeXStringSet(DNAStringSet(oligos), paste(outfile,".fa",sep=""), format="fasta")
 
 mut.prob <- p.intercept + p.coefficient * do.call(c,best.oligos[,"tm"])
+mut.prob[mut.prob < 0] <- 0
 mut.prob <- mut.prob / sum(mut.prob)
 
 
