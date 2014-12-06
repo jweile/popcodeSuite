@@ -67,23 +67,6 @@ input {
 	z-index: 1;
 }
 
-
-details {
-	border: 1px dotted #aaaaaa;
-	padding: 10px;
-	margin-bottom:5px;
-	width:600px;
-}
-summary {
-	/*font-weight: bold;*/
-	cursor:pointer;
-	/*color: darkblue;*/
-}
-summary:hover{
-	text-decoration: underline;
-};
-
-
 .box {
 	width: 600px;
 	height: 400px;
@@ -116,3 +99,19 @@ summary:hover{
   background: #272822;
   color: white;
 }
+
+details {
+	border: 1px dotted #aaaaaa;
+	padding: 10px;
+	margin-bottom:5px;
+	width:600px;
+}
+summary {
+	/*font-weight: bold;*/
+	cursor:pointer;
+	/*color: darkblue;*/
+}
+summary:hover{
+	text-decoration: underline;
+};
+
