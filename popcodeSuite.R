@@ -147,7 +147,7 @@ cat("Writing output...\n\n")
 
 #write overview table
 write.table(
-	data.frame(id=names(oligos),seq=oligos,Tm=unlist(best.oligos[,"tm"])),
+	data.frame(id=names(oligos),seq=oligos,Tm=signif(unlist(best.oligos[,"tm"]),4)),
 	paste(outfile,".tsv",sep=""),
 	row.names=FALSE,
 	sep="\t",
