@@ -44,7 +44,7 @@ process <- function(id,path) {
 			"seq=",path," ",
 			"outfile=www/html/popcodeSuite/",id," ",
 			"length=",oligo.length," ",
-			"wiggle=",wiggle," ",,
+			"wiggle=",wiggle," ",
 			sep=""
 		)
 	)
