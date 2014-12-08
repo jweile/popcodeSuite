@@ -35,7 +35,7 @@ showWait <- function(id) {
 		f <- file(outfile,open="r")
 		output <- readLines(f)
 		close(f)
-		if (nchar(output) == 0) {
+		if (is.null(output) || length(output) == 0 || nchar(output) == 0) {
 			output <- "Waiting for Sun Grid Engine..."
 		}
 	} else {
