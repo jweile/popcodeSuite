@@ -9,8 +9,8 @@ if (!("HELP" %in% installed.packages()[,"Package"])) {
 	biocLite("HELP")
 }
 
-library("Biostrings")
-library("HELP")
+suppressMessages(library("Biostrings"))
+suppressMessages(library("HELP"))
 
 ###
 # get the user-supplied argument with the given name
