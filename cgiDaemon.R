@@ -36,14 +36,15 @@ process <- function(id,path) {
 	#queue up the process in SGE
 	system(
 		paste(
-			"qsub -V -e /dev/null -o /dev/null -cwd -b y ",
+			"qsub -V -e www/html/popcodeSuite/",id,".err ",
+			"-o www/html/popcodeSuite/",id,".out "
+			,"-cwd -b y ",
 			"/home/jweile/bin/Rscript ",
 			"projects/popcodeSuite/popcodeSuite.R ",
 			"seq=",path," ",
 			"outfile=www/html/popcodeSuite/",id," ",
 			"length=",oligo.length," ",
-			"wiggle=",wiggle," ",
-			">www/html/popcodeSuite/",id,".out",
+			"wiggle=",wiggle," ",,
 			sep=""
 		)
 	)
