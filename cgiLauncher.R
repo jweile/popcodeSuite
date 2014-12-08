@@ -36,7 +36,7 @@ showWait <- function(id) {
 		output <- readLines(f)
 		close(f)
 	} else {
-		output <- "Waiting for daemon..."
+		output <- "Scheduling job..."
 	}
 	cat(interpolate("../../html/popcodeSuite/wait.html",
 		c(id=id, output=paste(output,collapse="\n"))

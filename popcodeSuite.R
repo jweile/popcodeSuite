@@ -1,5 +1,7 @@
 #!/home/jweile/bin/Rscript
 
+cat("Loading libraries...\n\n")
+
 if (!("Biostrings" %in% installed.packages()[,"Package"])) {
 	source("http://bioconductor.org/biocLite.R")
 	biocLite("Biostrings")
@@ -401,5 +403,5 @@ plotMutCoverage <- function(mutations, sequence, all=FALSE, main="") {
 
 cat("Plotting detailed coverage...\n")
 png(paste(outfile,"_mutcov.png",sep=""),width=1400,height=400)
-plotMutCoverage(clones,DNAString(orf))
+invisible(plotMutCoverage(clones,DNAString(orf)))
 cat("Done!\n")

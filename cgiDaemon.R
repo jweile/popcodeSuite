@@ -33,18 +33,19 @@ process <- function(id,path) {
 		oligo.length <- if ("oligo.length" %in% colnames(opts)) opts$oligo.length else 33
 		wiggle <- if ("wiggle" %in% colnames(opts)) opts$wiggle else 5
 	}
-	#start the process
+	#queue up the process in SGE
 	system(
 		paste(
+			"qsub -V -e /dev/null -o /dev/null -cwd -b y ",
+			"/home/jweile/bin/Rscript ",
 			"projects/popcodeSuite/popcodeSuite.R ",
 			"seq=",path," ",
 			"outfile=www/html/popcodeSuite/",id," ",
 			"length=",oligo.length," ",
 			"wiggle=",wiggle," ",
-			"&>www/html/popcodeSuite/",id,".out",
+			">www/html/popcodeSuite/",id,".out",
 			sep=""
-		),
-		wait=FALSE
+		)
 	)
 	processed[nrow(processed)+1,"id"] <<- id
 	exportProcessedTable()
