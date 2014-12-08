@@ -44,12 +44,23 @@ showWait <- function(id) {
 }
 
 showResult <- function(id) {
-	f <- file(paste("../../html/popcodeSuite/",id,".fa",sep=""),open="r")
-	oligos <- readLines(f)
+	f <- file(paste("../../html/popcodeSuite/",id,".tsv",sep=""),open="r")
+	otable <- readLines(f)
 	close(f)
+	otable <- paste(
+		"<table>",
+		paste(paste(
+			"<tr><td>",
+			gsub("\t","</td><td>",otable),
+			"</td></tr>",
+			sep=""
+		),collapse="\n"),
+		"</table>",sep="\n"
+	)
+	
 
 	cat(interpolate("../../html/popcodeSuite/result.html",
-		c(oligos=paste(oligos,collapse="\n"), id=id)
+		c(otable=paste(otable,collapse="\n"), id=id)
 	))
 }
 

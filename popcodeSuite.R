@@ -135,8 +135,8 @@ oligos <- do.call(c, lapply(1:nrow(best.oligos), function(i) {
 		aa <- as.character(translate(DNAString(codon)))
 		outseq <- sequence
 		substr(outseq, codon.start.in.oligo, codon.start.in.oligo+2) <- "NNK"
-		outseqs <- c(sequence,outseq)
-		names(outseqs) <- paste(aa,i,c("wt","X"),sep="")
+		outseqs <- outseq
+		names(outseqs) <- paste(aa,i,"X",sep="")
 		# cat(i,"\t",substr(sequence,1,1),"\t",substr(sequence,nchar(sequence),nchar(sequence)),"\n")
 		outseqs
 	})
@@ -145,7 +145,16 @@ oligos <- do.call(c, lapply(1:nrow(best.oligos), function(i) {
 
 cat("Writing output...\n\n")
 
-#write results to file
+#write overview table
+write.table(
+	data.frame(id=names(oligos),seq=oligos,Tm=unlist(best.oligos[,"tm"])),
+	paste(outfile,".tsv",sep=""),
+	row.names=FALSE,
+	sep="\t",
+	quote=FALSE
+)
+
+#write fasta file
 writeXStringSet(DNAStringSet(oligos), paste(outfile,".fa",sep=""), format="fasta")
 
 mut.prob <- p.intercept + p.coefficient * do.call(c,best.oligos[,"tm"])
