@@ -48,7 +48,7 @@ showResult <- function(id) {
 	otable <- readLines(f)
 	close(f)
 	otable <- paste(
-		"<table>",
+		"<table class=\"oligotable\">",
 		paste(paste(
 			"<tr><td>",
 			gsub("\t","</td><td>",otable),
