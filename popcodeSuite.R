@@ -267,9 +267,9 @@ plot(
 	xlab="Picked colonies",ylab="Mutant coverage"
 )
 grid()
-dev.off()
+invisible(dev.off())
 
-data.frame(n=ns,coverage=coverages)
+# data.frame(n=ns,coverage=coverages)
 
 
 # Plots the mutation coverage for a given change matrix
