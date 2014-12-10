@@ -173,7 +173,7 @@ if ("id" %in% names(getData)) {
 
 
 		} else {
-			showError("Invalid input!")
+			showError("The input is not a valid DNA sequence!")
 		}
 
 	} else {
