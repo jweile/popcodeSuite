@@ -14,6 +14,23 @@ input {
   /*font-size: 200%;*/
 }
 
+.msgbox {
+	border: 1px solid #ccc;
+	-webkit-box-shadow: 3px 3px 5px darkgrey;
+	   -moz-box-shadow: 3px 3px 5px darkgrey;
+	        box-shadow: 3px 3px 5px darkgrey;
+	padding: 10px;
+	margin: 20px;
+}
+
+.errorSymbol {
+	font-size:50px; 
+	color:red; 
+	text-shadow:2px 2px 2px gray; 
+	float:left; 
+	width:60px;
+}
+
 .tabs {
 	position: relative;
 	min-height: 600px;
