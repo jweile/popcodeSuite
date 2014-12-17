@@ -84,6 +84,9 @@ input {
 [type=radio]:checked ~ label ~ .content {
 	z-index: 1;
 }
+[type=radio]:disabled ~ label {
+	color: gray;
+}
 
 .box {
 	width: 600px;
