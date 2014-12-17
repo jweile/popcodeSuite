@@ -114,7 +114,7 @@ if ("id" %in% names(getData)) {
 	#check if output file exists
 	if (file.exists(paste("../../html/popcodeSuite/",id,".out",sep=""))) {
 		out.tail <- system(paste("tail -1 ../../html/popcodeSuite/",id,".out",sep=""),intern=TRUE)
-		if (out.tail == "Done!") {
+		if (!is.null(out.tail) && length(out.tail) > 0 && out.tail == "Done!") {
 			#then the job is done
 			showResult(id)
 		} else {
