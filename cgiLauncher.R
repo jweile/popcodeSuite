@@ -138,7 +138,7 @@ if ("id" %in% names(getData)) {
 		suffix <- postData[["suffix"]]
 		oligo.length <- postData[["oligo.length"]]
 		wiggle <- postData[["wiggle"]]
-		v2 <- "v2" %in% names(postData) && postData[["v2"]] == 1
+		v2 <- "v2" %in% names(postData)
 
 		#check validity	
 		if (valid(orf) && valid(prefix) && valid(suffix)) {
