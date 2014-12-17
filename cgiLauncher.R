@@ -61,7 +61,7 @@ showResult <- function(id) {
 		"</table>",sep="\n"
 	)
 
-	if (file.exists(paste("../../html/popcodeSuite/",id,"_mutcov.png",sep="")) {
+	if (file.exists(paste("../../html/popcodeSuite/",id,"_mutcov.png",sep=""))) {
 		v1mode <- ""
 	} else {
 		v1mode <- "disabled"
