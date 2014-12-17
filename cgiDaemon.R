@@ -32,6 +32,7 @@ process <- function(id,path) {
 		opts <- read.csv(opts.file,stringsAsFactors=FALSE)
 		oligo.length <- if ("oligo.length" %in% colnames(opts)) opts$oligo.length else 33
 		wiggle <- if ("wiggle" %in% colnames(opts)) opts$wiggle else 5
+		v2 <- if ("v2" %in% colnames(opts)) opts$v2 else FALSE
 	}
 	#queue up the process in SGE
 	system(
@@ -45,6 +46,7 @@ process <- function(id,path) {
 			"outfile=www/html/popcodeSuite/",id," ",
 			"length=",oligo.length," ",
 			"wiggle=",wiggle," ",
+			"v2Enabled=",v2," ",
 			sep=""
 		)
 	)

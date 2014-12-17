@@ -60,10 +60,15 @@ showResult <- function(id) {
 		),collapse="\n"),
 		"</table>",sep="\n"
 	)
-	
+
+	if (file.exists(paste("../../html/popcodeSuite/",id,"_mutcov.png",sep="")) {
+		v1mode <- ""
+	} else {
+		v1mode <- "disabled"
+	}
 
 	cat(interpolate("../../html/popcodeSuite/result.html",
-		c(otable=paste(otable,collapse="\n"), id=id)
+		c(otable=paste(otable,collapse="\n"), id=id, v1mode=v1mode)
 	))
 }
 
@@ -107,9 +112,15 @@ if ("id" %in% names(getData)) {
 	#if an id was quoted, it's not a new job
 	id <- gsub(" ","",getData[["id"]])
 	#check if output file exists
-	if (file.exists(paste("../../html/popcodeSuite/",id,"_mutcov.png",sep=""))) {
-		#then the job is done
-		showResult(id)
+	if (file.exists(paste("../../html/popcodeSuite/",id,".out",sep=""))) {
+		out.tail <- system(paste("tail -1 ../../html/popcodeSuite/",id,".out",sep=""),intern=TRUE)
+		if (out.tail == "Done!") {
+			#then the job is done
+			showResult(id)
+		} else {
+			#still running
+			showWait(id)
+		}
 	} else if (!file.exists(paste("../../html/popcodeSuite/",id,"_in.fa",sep=""))) {
 		#invalid id
 		showError("This job does not exist (anymore?)")
@@ -127,6 +138,7 @@ if ("id" %in% names(getData)) {
 		suffix <- postData[["suffix"]]
 		oligo.length <- postData[["oligo.length"]]
 		wiggle <- postData[["wiggle"]]
+		v2 <- "v2" %in% names(postData) && postData[["v2"]] == "1"
 
 		#check validity	
 		if (valid(orf) && valid(prefix) && valid(suffix)) {
@@ -146,6 +158,7 @@ if ("id" %in% names(getData)) {
 				wiggle <- as.numeric(wiggle)
 				opts[1,"wiggle"] <- wiggle
 			}
+			opts[1,"v2"] <- v2
 			write.table(
 				opts,
 				paste("../../html/popcodeSuite/",id,"_opts.csv",sep=""),

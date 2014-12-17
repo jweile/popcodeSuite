@@ -1,3 +1,5 @@
+DIR := $(shell pwd)
+
 all: package
 
 package:
@@ -13,3 +15,8 @@ deploy:
 	ln -s result.html $${HOME}/www/html/popcodeSuite/cgiLauncher.html
 	ln -s style.css $${HOME}/www/html/popcodeSuite/style.css
 	ln -s wait.html $${HOME}/www/html/popcodeSuite/wait.html
+
+start:
+	cd
+	nohup Rscript $(DIR)/cgiDaemon.R &
+	cd $(DIR)
