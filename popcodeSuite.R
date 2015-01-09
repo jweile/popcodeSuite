@@ -157,7 +157,7 @@ if (pop.version < 3) {
 	png(paste(outfile,".png",sep=""),width=600,height=300)
 	op <- par(mfrow=c(1,2),cex=.9)
 
-	if (v2) {
+	if (pop.version == 2) {
 		offset.counts <- table(nchar(best.oligos[,"sequence"])-oligo.length)
 	} else {
 		offset.counts <- table(unlist(best.oligos[,"codon.start.in.oligo"])-1-floor((oligo.length-3)/2))
