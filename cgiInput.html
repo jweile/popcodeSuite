@@ -22,9 +22,23 @@ Content-type: text/html
 			<input type="number" name="oligo.length" min=9 max=200 step=1 value=33 size=3/>
 			<p>Maximal offset:</p>
 			<input type="number" name="wiggle" min=1 max=10 step=1 value=5 size=3/>
-			<p>Use variable length:</p>
-			<input type="checkbox" id="v2" name="v2" value=1/>
-			<label for="v2">Enable</label>
+			<p>Mode:</p>
+			<!-- <input type="checkbox" id="v2" name="v2" value=1/>
+			<label for="v2">Enable</label> -->
+
+			<p>
+				<input type="radio" id="v1" name="version-group" checked/>
+				<label for="v1">Fixed length</label>
+			</p>
+			<p>
+				<input type="radio" id="v2" name="version-group"/>
+				<label for="v2">Variable length with single Tm optimization</label>
+			</p>
+			<p>
+				<input type="radio" id="v3" name="version-group"/>
+				<label for="v3">Variable length with separate Tm optimizations</label>
+			</p>
+
 		</details>
 		<br/><br/>
 		<input type="submit" value="Submit">

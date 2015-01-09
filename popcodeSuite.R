@@ -62,7 +62,8 @@ wiggle <- as.numeric(getArg("wiggle",5))
 input.seqs <- readDNAStringSet(getArg("seq",required=TRUE))
 outfile <- getArg("outfile","output/tmplDirectedNNK")
 
-v2 <- as.logical(getArg("v2Enabled",default=FALSE))
+# v2 <- as.logical(getArg("v2Enabled",default=FALSE))
+pop.version <- as.numeric(getArg("version",default=1))
 
 p.intercept <- as.numeric(getArg("p.intercept",0.0693407))
 p.coefficient <- as.numeric(getArg("p.coefficient",-0.0008216))
@@ -80,71 +81,186 @@ construct <- paste(prefix,orf,suffix,sep="")
 cat("Exploring possible oligos...\n")
 codon.starts <- nchar(prefix) + seq(1+3,nchar(orf),3)
 
-oligo.choices <- lapply(codon.starts, function(codon.start) {
-	lapply(-wiggle:wiggle, function(offset) {
-		if (v2) {
-			left <- ceiling(offset/2)
-			right <- floor(offset/2)
-			start <- codon.start + 1 - floor(oligo.length/2) - left
-			end <- codon.start + 1 + floor(oligo.length/2) + right
-		} else {
-			start <- codon.start + 1 - floor(oligo.length/2) + offset
-			end <- codon.start + 1 + floor(oligo.length/2) + offset
-		}
-		sequence <- substr(construct,start,end)
-		list(
-			codon.start.in.construct=codon.start,
-			codon.start.in.oligo=codon.start-start+1,
-			oligo.start=start,
-			oligo.end=end,
-			sequence=sequence,
-			tm=calcTm(sequence)
-		)
+if (pop.version == 3) {
+
+	n.choices <- length(codon.starts) * (2*wiggle+1)^2
+	pb <- txtProgressBar(max=n.choices,style=3)
+	i <- 0
+	oligo.choices <- do.call(rbind,lapply(codon.starts, function(codon.start) {
+		do.call(rbind,lapply(-wiggle:wiggle, function(left.offset) {
+			do.call(rbind,lapply(-wiggle:wiggle, function(right.offset) {
+				start <- codon.start + 1 - floor(oligo.length/2) + left.offset
+				end <- codon.start + 1 + floor(oligo.length/2) + right.offset
+				sequence <- substr(construct,start,end)
+				setTxtProgressBar(pb,i <<- i+1)
+				list(
+					codon.start.in.construct=codon.start,
+					codon.start.in.oligo=codon.start-start+1,
+					oligo.start=start,
+					oligo.end=end,
+					sequence=sequence,
+					tm.tot=calcTm(sequence),
+					tm.left=calcTm(substr(sequence,1,codon.start-start)),
+					tm.right=calcTm(substr(sequence,codon.start-start+4,nchar(sequence)))
+				)
+			}))
+		}))
+	}))
+	close(pb)
+
+	cat("Optimizing melting temperatures...\n")
+	median.tms <- apply(oligo.choices[,c("tm.left","tm.right")],2, function(x) median(unlist(x)))
+	deviation <- sapply(1:nrow(oligo.choices), function(i) {
+		sum(abs(unlist(oligo.choices[i,c("tm.left","tm.right")]) - median.tms))
 	})
-})
+	min.idx <- tapply(deviation,unlist(oligo.choices[,"codon.start.in.construct"]), which.min)
+	best.oligos <- oligo.choices[(1:length(codon.starts)-1) * (2*wiggle+1)^2 + min.idx,]
 
-cat("Optimizing melting temperatures...\n")
-median.tm <- median(unlist(lapply(oligo.choices, lapply, function(item)item$tm)))
-best.oligos <- do.call(rbind,lapply(oligo.choices, function(options) {
-	tms <- sapply(options, function(item) item$tm)
-	min.idx <- which.min(abs(tms - median.tm))
-	options[[min.idx]]
-}))
-
-cat("Plotting offset distribution...\n")
-png(paste(outfile,".png",sep=""),width=600,height=300)
-op <- par(mfrow=c(1,2),cex=.9)
-
-if (v2) {
-	offset.counts <- table(nchar(best.oligos[,"sequence"])-oligo.length)
 } else {
-	offset.counts <- table(unlist(best.oligos[,"codon.start.in.oligo"])-floor(oligo.length/2))
+
+	oligo.choices <- lapply(codon.starts, function(codon.start) {
+		lapply(-wiggle:wiggle, function(offset) {
+			if (pop.version == 2) {
+				left <- ceiling(offset/2)
+				right <- floor(offset/2)
+				start <- codon.start + 1 - floor(oligo.length/2) - left
+				end <- codon.start + 1 + floor(oligo.length/2) + right
+			} else {
+				start <- codon.start + 1 - floor(oligo.length/2) + offset
+				end <- codon.start + 1 + floor(oligo.length/2) + offset
+			}
+			sequence <- substr(construct,start,end)
+			list(
+				codon.start.in.construct=codon.start,
+				codon.start.in.oligo=codon.start-start+1,
+				oligo.start=start,
+				oligo.end=end,
+				sequence=sequence,
+				tm=calcTm(sequence)
+			)
+		})
+	})
+
+	cat("Optimizing melting temperatures...\n")
+	median.tm <- median(unlist(lapply(oligo.choices, lapply, function(item)item$tm)))
+	best.oligos <- do.call(rbind,lapply(oligo.choices, function(options) {
+		tms <- sapply(options, function(item) item$tm)
+		min.idx <- which.min(abs(tms - median.tm))
+		options[[min.idx]]
+	}))
+
 }
 
-barplot(
-	table(unlist(best.oligos[,"codon.start.in.oligo"])-floor(oligo.length/2)),
-	xlab="Offset",
-	ylab="Frequency",
-	col="gold2",
-	border="gold4"
-)
-grid(nx=NA,ny=NULL)
+cat("Plotting offset distribution...\n")
+if (pop.version < 3) {
 
-hist(
-	unlist(best.oligos[,"tm"]),
-	breaks=20,
-	col="steelblue3",
-	border="steelblue4",
-	xlab="Melting temperature (C)",
-	main=""
-)
-grid(nx=NA,ny=NULL)
-tmm <- median(unlist(best.oligos[,"tm"]))
-abline(v=tmm,lty="dashed",col="darkgray")
-text(tmm, (par("usr")[4]-par("usr")[3])/2, paste(format(tmm,digits=4),"C"))
+	png(paste(outfile,".png",sep=""),width=600,height=300)
+	op <- par(mfrow=c(1,2),cex=.9)
 
-par(op)
-invisible(dev.off())
+	if (v2) {
+		offset.counts <- table(nchar(best.oligos[,"sequence"])-oligo.length)
+	} else {
+		offset.counts <- table(unlist(best.oligos[,"codon.start.in.oligo"])-1-floor((oligo.length-3)/2))
+	}
+
+	barplot(
+		offset.counts,
+		xlab="Offset",
+		ylab="Frequency",
+		col="gold2",
+		border="gold4"
+	)
+	grid(nx=NA,ny=NULL)
+
+	hist(
+		unlist(best.oligos[,"tm"]),
+		breaks=20,
+		col="steelblue3",
+		border="steelblue4",
+		xlab="Melting temperature (C)",
+		main=""
+	)
+	grid(nx=NA,ny=NULL)
+	tmm <- median(unlist(best.oligos[,"tm"]))
+	abline(v=tmm,lty="dashed",col="darkgray")
+	text(tmm, (par("usr")[4]-par("usr")[3])/2, paste(format(tmm,digits=4),"C"))
+
+	par(op)
+	invisible(dev.off())
+
+} else {
+
+	png(paste(outfile,".png",sep=""),width=600,height=900)
+	layout(rbind(c(1,1),c(2,3),c(4,5)))
+	op <- par(cex=.9)
+
+	hist(
+		unlist(best.oligos[,"tm.tot"]),
+		breaks=20,
+		col="steelblue3",
+		border="steelblue4",
+		xlab="Overall Melting temperature (C)",
+		main=""
+	)
+	grid(nx=NA,ny=NULL)
+	tmm <- median(unlist(best.oligos[,"tm.tot"]))
+	abline(v=tmm,lty="dashed",col="darkgray")
+	text(tmm, (par("usr")[4]-par("usr")[3])/2, paste(format(tmm,digits=4),"C"))
+
+
+	offset.counts <- table(unlist(best.oligos[,"codon.start.in.oligo"])-1-floor((oligo.length-3)/2))
+	
+	barplot(
+		offset.counts,
+		xlab="5' Offset",
+		ylab="Frequency",
+		col="gold2",
+		border="gold4"
+	)
+	grid(nx=NA,ny=NULL)
+
+	hist(
+		unlist(best.oligos[,"tm.left"]),
+		breaks=20,
+		col="steelblue3",
+		border="steelblue4",
+		xlab="5' Melting temperature (C)",
+		main=""
+	)
+	grid(nx=NA,ny=NULL)
+	tmm <- median(unlist(best.oligos[,"tm.left"]))
+	abline(v=tmm,lty="dashed",col="darkgray")
+	text(tmm, (par("usr")[4]-par("usr")[3])/2, paste(format(tmm,digits=4),"C"))
+
+	offset.counts <- table(nchar(best.oligos[,"sequence"])-(unlist(best.oligos[,"codon.start.in.oligo"])+2)-floor((oligo.length-3)/2))
+	
+	barplot(
+		offset.counts,
+		xlab="3' Offset",
+		ylab="Frequency",
+		col="gold2",
+		border="gold4"
+	)
+	grid(nx=NA,ny=NULL)
+
+	hist(
+		unlist(best.oligos[,"tm.right"]),
+		breaks=20,
+		col="steelblue3",
+		border="steelblue4",
+		xlab="3' Melting temperature (C)",
+		main=""
+	)
+	grid(nx=NA,ny=NULL)
+	tmm <- median(unlist(best.oligos[,"tm.right"]))
+	abline(v=tmm,lty="dashed",col="darkgray")
+	text(tmm, (par("usr")[4]-par("usr")[3])/2, paste(format(tmm,digits=4),"C"))
+
+
+	par(op)
+	invisible(dev.off())
+
+}
 
 cat("inserting NNKs...\n")
 
@@ -165,18 +281,34 @@ oligos <- do.call(c, lapply(1:nrow(best.oligos), function(i) {
 cat("Writing output...\n\n")
 
 #write overview table
-write.table(
-	data.frame(id=names(oligos),seq=oligos,Tm=signif(unlist(best.oligos[,"tm"]),4)),
-	paste(outfile,".tsv",sep=""),
-	row.names=FALSE,
-	sep="\t",
-	quote=FALSE
-)
+if (pop.version < 3) {
+	write.table(
+		data.frame(id=names(oligos),seq=oligos,Tm=signif(unlist(best.oligos[,"tm"]),4)),
+		paste(outfile,".tsv",sep=""),
+		row.names=FALSE,
+		sep="\t",
+		quote=FALSE
+	)
+} else {
+	write.table(
+		data.frame(
+			id=names(oligos),
+			seq=oligos,
+			Tm=signif(unlist(best.oligos[,"tm.tot"]),4),
+			Tm.left=signif(unlist(best.oligos[,"tm.left"]),4),
+			Tm.right=signif(unlist(best.oligos[,"tm.right"]),4)
+		),
+		paste(outfile,".tsv",sep=""),
+		row.names=FALSE,
+		sep="\t",
+		quote=FALSE
+	)
+}
 
 #write fasta file
 writeXStringSet(DNAStringSet(oligos), paste(outfile,".fa",sep=""), format="fasta")
 
-if (!v2) {
+if (pop.version == 1) {
 
 	mut.prob <- p.intercept + p.coefficient * do.call(c,best.oligos[,"tm"])
 	mut.prob[mut.prob < 0] <- 0
