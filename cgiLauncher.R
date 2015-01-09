@@ -138,8 +138,7 @@ if ("id" %in% names(getData)) {
 		suffix <- postData[["suffix"]]
 		oligo.length <- postData[["oligo.length"]]
 		wiggle <- postData[["wiggle"]]
-		# v2 <- "v2" %in% names(postData)
-		ver <- if ("v3" %in% names(postData)) 3 else if ("v2" %in% names(postData)) 2 else 1
+		ver <- postData[["version"]]
 
 		#check validity	
 		if (valid(orf) && valid(prefix) && valid(suffix)) {
@@ -159,7 +158,12 @@ if ("id" %in% names(getData)) {
 				wiggle <- as.numeric(wiggle)
 				opts[1,"wiggle"] <- wiggle
 			}
-			opts[1,"version"] <- ver
+			if (!is.null(ver) && length(ver)==1 && 
+				nchar(ver)>0 && !is.na(as.numeric(ver))) {
+				ver <- as.numeric(ver)
+				opts[1,"version"] <- ver
+			}
+			
 			write.table(
 				opts,
 				paste("../../html/popcodeSuite/",id,"_opts.csv",sep=""),
