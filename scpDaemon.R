@@ -111,6 +111,13 @@ update.job <- function(id) {
 				set.status(id,"error")
 				return()
 			}
+
+			#delete remote copy of results
+			errCode <- system(paste0("ssh guru rm ",workspace,id,"*"),intern=FALSE)
+			if (errCode) {
+				warning("Unable to delete remote copy!")
+			}
+
 			#mark as done
 			set.status(id,"done")
 		}
