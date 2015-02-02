@@ -6,6 +6,10 @@ if (file.exists("status")) {
 	status <- read.csv("status",stringsAsFactors=FALSE)
 } 
 
+workspace <- "/home/rothlab/jweile/pcs_workspace/"
+script <- "/home/rothlab/jweile/projects/popcodeSuite/popcodeSuite.R"
+
+#save the status table to disk
 save.status <- function() {
 	write.table(
 		status,"status",
@@ -13,6 +17,7 @@ save.status <- function() {
 	)
 }
 
+#set a status for the given id
 set.status <- function(id,st) {
 	if (id %in% status$id) {
 		status[which(status$id==id),"status"] <<- st
@@ -21,6 +26,7 @@ set.status <- function(id,st) {
 	}
 }
 
+#retrieve the status for the given id
 get.status <- function(id) {
 	if (id %in% status$id) {
 		status[which(status$id==id),"status"]
@@ -40,19 +46,24 @@ purge <- function(id) {
 	exportProcessedTable()
 }
 
+#start a new job for a given id and input file
 process.job <- function(id,f) {
 
 	#read the options file
-	opts.file <- paste0("www/html/popcodeSuite/",id,"_opts.csv")
+	opts.file <- paste0(id,"_opts.csv")
 	if (file.exists(opts.file)) {
 		opts <- read.csv(opts.file,stringsAsFactors=FALSE)
 		oligo.length <- if ("oligo.length" %in% colnames(opts)) opts$oligo.length else 33
 		wiggle <- if ("wiggle" %in% colnames(opts)) opts$wiggle else 5
 		version <- if ("version" %in% colnames(opts)) opts$version else 1
+	} else {
+		oligo.length <- 33
+		wiggle <- 5
+		version <- 1
 	}
 
 	#SCP input file to guru
-	errCode <- system(paste0("scp ",f," guru:/home/jweile/pcs_workspace/"),intern=FALSE)
+	errCode <- system(paste0("scp ",f," guru:",workspace),intern=FALSE)
 	if (errCode) {
 		warning("SCP failed!")
 		set.status(id,"error")
@@ -60,18 +71,18 @@ process.job <- function(id,f) {
 	}
 	#Use SSH to schedule an SGE job on the data
 	errCode <- system(paste0(
-		"ssh \"source /etc/profile; qsub -V ",
-		"-e /home/jweile/pcs_workspace/",id,".err ",
-		"-o /home/jweile/pcs_workspace/",id,".out ",
-		"-wd /home/jweile/pcs_workspace/ -b y ",
+		"ssh guru \"source /etc/profile; qsub -V ",
+		"-e ",workspace,id,".err ",
+		"-o ",workspace,id,".out ",
+		"-wd ",workspace," -b y ",
 		"/software/R/bin/Rscript ",
-		"/home/jweile/projects/popcodeSuite/popcodeSuite.R ",
+		script," ",
 		"seq=",f," ",
-		"outfile=/home/jweile/pcs_workspace/",id," ",
+		"outfile=",workspace,id," ",
 		"length=",oligo.length," ",
 		"wiggle=",wiggle," ",
 		"version=",version," ",
-		"\"",
+		"\""
 	),intern=FALSE)
 	if (errCode) {
 		warning("SSH failed!")
@@ -86,15 +97,20 @@ process.job <- function(id,f) {
 update.job <- function(id) {
 
 	#check if log file exists
-	log.exists <- as.logical(system(paste0("ssh guru \"[[ -f /home/jweile/pcs_workspace/",id,".out ]] && echo TRUE || echo FALSE\""),intern=TRUE))
+	log.exists <- as.logical(system(paste0("ssh guru \"[[ -f ",workspace,id,".out ]] && echo TRUE || echo FALSE\""),intern=TRUE))
 	if (log.exists) {
 		#SCP the log file over
-		system(paste0("scp guru:/home/jweile/pcs_workspace/",id,".out ."))
+		system(paste0("scp guru:",workspace,id,".out ."))
 		#check if it's done
 		if (system(paste0("tail -1 ",id,".out"),intern=TRUE) == "Done!") {
 
 			#copy over the results
-			system("scp guru:/home/jweile/pcs_workspace/",id,"* .")
+			errCode <- system(paste0("scp guru:",workspace,id,"* ."),intern=FALSE)
+			if (errCode) {
+				warning("SCP failed!")
+				set.status(id,"error")
+				return()
+			}
 			#mark as done
 			set.status(id,"done")
 		}
@@ -112,11 +128,11 @@ while(TRUE) {
 
 		id <- substr(f,1,47)
 		age <- difftime(Sys.time(), file.info(f)[,"ctime"], units = "weeks")
-		status <- get.status(id)
+		st <- get.status(id)
 
-		if (status == "new") {
+		if (st == "new") {
 			process.job(id,f)
-		} else if (status == "live") {
+		} else if (st == "live") {
 			update.job(id)
 		} 
 
