@@ -108,30 +108,36 @@ update.job <- function(id) {
 	),intern=TRUE))
 	if (log.exists) {
 		#SCP the log file over
-		system(paste0("rsync -az ",user,"@",host,":",workspace,id,".out ."))
-		#check if it's done
-		if (system(paste0("tail -1 ",id,".out"),intern=TRUE) == "Done!") {
+		errCode <- system(paste0(
+			"rsync -az ",user,"@",host,":",workspace,id,".out ."
+		),intern=FALSE)
+		if (errCode) {
+			warning("Unable to transfer remote logfile!")
+		} else {
+			#check if it's done
+			if (system(paste0("tail -1 ",id,".out"),intern=TRUE) == "Done!") {
 
-			#copy over the results
-			errCode <- system(paste0(
-				"rsync -az --exclude '*_in.fa' ",user,"@",host,":",workspace,id,"* ."
-			),intern=FALSE)
-			if (errCode) {
-				warning("SCP failed!")
-				set.status(id,"error")
-				return()
+				#copy over the results
+				errCode <- system(paste0(
+					"rsync -az --exclude '*_in.fa' ",user,"@",host,":",workspace,id,"* ."
+				),intern=FALSE)
+				if (errCode) {
+					warning("SCP failed!")
+					set.status(id,"error")
+					return()
+				}
+
+				#delete remote copy of results
+				errCode <- system(paste0(
+					"ssh ",user,"@",host," rm ",workspace,id,"*"
+				),intern=FALSE)
+				if (errCode) {
+					warning("Unable to delete remote copy!")
+				}
+
+				#mark as done
+				set.status(id,"done")
 			}
-
-			#delete remote copy of results
-			errCode <- system(paste0(
-				"ssh ",user,"@",host," rm ",workspace,id,"*"
-			),intern=FALSE)
-			if (errCode) {
-				warning("Unable to delete remote copy!")
-			}
-
-			#mark as done
-			set.status(id,"done")
 		}
 	}
 
