@@ -1,6 +1,8 @@
-#!/home/jweile/bin/Rscript
+#!/usr/bin/env Rscript
 
 sink(file("msg.log", open="w"),type="message")
+
+docBase <- "/srv/bundler/Staging/popcodeSuite/html/"
 
 makeUUID <- function() {
 	baseuuid <- paste(sample(c(letters[1:6],0:9),30,replace=TRUE),collapse="")
@@ -26,11 +28,11 @@ interpolate <- function(filename, values) {
 }
 
 showError <- function(err) {
-	cat(interpolate("../../html/popcodeSuite/error.html",c(err=err)))
+	cat(interpolate(paste0(docBase,"error.html"),c(err=err)))
 }
 
 showWait <- function(id) {
-	outfile <- paste("../../html/popcodeSuite/",id,".out",sep="")
+	outfile <- paste(docBase,id,".out",sep="")
 	if (file.exists(outfile)) {
 		f <- file(outfile,open="r")
 		output <- readLines(f)
@@ -41,13 +43,13 @@ showWait <- function(id) {
 	} else {
 		output <- "Scheduling job..."
 	}
-	cat(interpolate("../../html/popcodeSuite/wait.html",
+	cat(interpolate(paste0(docBase,"wait.html"),
 		c(id=id, output=paste(output,collapse="\n"))
 	))
 }
 
 showResult <- function(id) {
-	f <- file(paste("../../html/popcodeSuite/",id,".tsv",sep=""),open="r")
+	f <- file(paste(docBase,id,".tsv",sep=""),open="r")
 	otable <- readLines(f)
 	close(f)
 	otable <- paste(
@@ -61,19 +63,19 @@ showResult <- function(id) {
 		"</table>",sep="\n"
 	)
 
-	if (file.exists(paste("../../html/popcodeSuite/",id,"_mutcov.png",sep=""))) {
+	if (file.exists(paste(docBase,id,"_mutcov.png",sep=""))) {
 		v1mode <- ""
 	} else {
 		v1mode <- "disabled"
 	}
 
-	cat(interpolate("../../html/popcodeSuite/result.html",
+	cat(interpolate(paste0(docBase,"result.html"),
 		c(otable=paste(otable,collapse="\n"), id=id, v1mode=v1mode)
 	))
 }
 
 showInput <- function() {
-	cat(interpolate("../../html/popcodeSuite/cgiInput.html",character(0)))
+	cat(interpolate(paste0(docBase,"cgiInput.html"),character(0)))
 }
 
 
@@ -112,8 +114,8 @@ if ("id" %in% names(getData)) {
 	#if an id was quoted, it's not a new job
 	id <- gsub(" ","",getData[["id"]])
 	#check if output file exists
-	if (file.exists(paste("../../html/popcodeSuite/",id,".out",sep=""))) {
-		out.tail <- system(paste("tail -1 ../../html/popcodeSuite/",id,".out",sep=""),intern=TRUE)
+	if (file.exists(paste(docBase,id,".out",sep=""))) {
+		out.tail <- system(paste("tail -1 ",docBase,id,".out",sep=""),intern=TRUE)
 		if (!is.null(out.tail) && length(out.tail) > 0 && out.tail == "Done!") {
 			#then the job is done
 			showResult(id)
@@ -121,7 +123,7 @@ if ("id" %in% names(getData)) {
 			#still running
 			showWait(id)
 		}
-	} else if (!file.exists(paste("../../html/popcodeSuite/",id,"_in.fa",sep=""))) {
+	} else if (!file.exists(paste(docBase,id,"_in.fa",sep=""))) {
 		#invalid id
 		showError("This job does not exist (anymore?)")
 	} else {
@@ -166,12 +168,12 @@ if ("id" %in% names(getData)) {
 			
 			write.table(
 				opts,
-				paste("../../html/popcodeSuite/",id,"_opts.csv",sep=""),
+				paste(docBase,id,"_opts.csv",sep=""),
 				sep=",",quote=FALSE,row.names=FALSE
 			)
 
 			#write input file
-			f <- file(paste("../../html/popcodeSuite/",id,"_in.fa",sep=""),open="w")
+			f <- file(paste(docBase,id,"_in.fa",sep=""),open="w")
 			writeLines(
 				c(
 					">prefix",

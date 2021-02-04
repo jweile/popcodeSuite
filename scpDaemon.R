@@ -1,4 +1,4 @@
-#!/home/jweile/bin/Rscript
+#!/usr/bin/env Rscript
 
 #keeps track of the previously processed jobs
 status <- data.frame(id=character(0),status=character(0),stringsAsFactors=FALSE)
@@ -6,6 +6,8 @@ if (file.exists("status")) {
 	status <- read.csv("status",stringsAsFactors=FALSE)
 } 
 
+user <- "jweile"
+host <- "guru-int.mshri.on.ca"
 workspace <- "/home/rothlab/jweile/pcs_workspace/"
 script <- "/home/rothlab/jweile/projects/popcodeSuite/popcodeSuite.R"
 
@@ -62,8 +64,10 @@ process.job <- function(id,f) {
 		version <- 1
 	}
 
-	#SCP input file to guru
-	errCode <- system(paste0("scp ",f," guru:",workspace),intern=FALSE)
+	#SCP input file to cluster host
+	errCode <- system(paste0(
+		"scp ",f," ",user,"@",host,":",workspace
+	),intern=FALSE)
 	if (errCode) {
 		warning("SCP failed!")
 		set.status(id,"error")
@@ -71,7 +75,8 @@ process.job <- function(id,f) {
 	}
 	#Use SSH to schedule an SGE job on the data
 	errCode <- system(paste0(
-		"ssh guru \"source /etc/profile; qsub -V ",
+		"ssh ",user,"@",host,
+		" \"source /etc/profile; qsub -V ",
 		"-e ",workspace,id,".err ",
 		"-o ",workspace,id,".out ",
 		"-wd ",workspace," -b y ",
@@ -97,15 +102,20 @@ process.job <- function(id,f) {
 update.job <- function(id) {
 
 	#check if log file exists
-	log.exists <- as.logical(system(paste0("ssh guru \"[[ -f ",workspace,id,".out ]] && echo TRUE || echo FALSE\""),intern=TRUE))
+	log.exists <- as.logical(system(paste0(
+		"ssh ",user,"@",host,
+		" \"[[ -f ",workspace,id,".out ]] && echo TRUE || echo FALSE\""
+	),intern=TRUE))
 	if (log.exists) {
 		#SCP the log file over
-		system(paste0("scp guru:",workspace,id,".out ."))
+		system(paste0("scp ",user,"@",host,":",workspace,id,".out ."))
 		#check if it's done
 		if (system(paste0("tail -1 ",id,".out"),intern=TRUE) == "Done!") {
 
 			#copy over the results
-			errCode <- system(paste0("scp guru:",workspace,id,"* ."),intern=FALSE)
+			errCode <- system(paste0(
+				"scp ",user,"@",host,":",workspace,id,"* ."
+			),intern=FALSE)
 			if (errCode) {
 				warning("SCP failed!")
 				set.status(id,"error")
@@ -113,7 +123,9 @@ update.job <- function(id) {
 			}
 
 			#delete remote copy of results
-			errCode <- system(paste0("ssh guru rm ",workspace,id,"*"),intern=FALSE)
+			errCode <- system(paste0(
+				"ssh ",user,"@",host," rm ",workspace,id,"*"
+			),intern=FALSE)
 			if (errCode) {
 				warning("Unable to delete remote copy!")
 			}
