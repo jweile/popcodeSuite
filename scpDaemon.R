@@ -115,7 +115,8 @@ update.job <- function(id) {
 			warning("Unable to transfer remote logfile!")
 		} else {
 			#check if it's done
-			if (system(paste0("tail -1 ",id,".out"),intern=TRUE) == "Done!") {
+			lastLine <- system(paste0("tail -1 ",id,".out"),intern=TRUE)
+			if (length(lastLine) > 0 && lastLine == "Done!") {
 
 				#copy over the results
 				errCode <- system(paste0(
